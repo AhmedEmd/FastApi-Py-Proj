@@ -9,7 +9,7 @@ class Validation(BaseSettings):
     database_username: str = "postgres"
     secret_key: Optional[str] = None
     algorithm: Optional[str] = None
-    access_token_expire_minutes: Optional[int] = None
+    access_token_expire_minutes: Optional[int] = 30
 
     class Config:
         env_file = ".env"

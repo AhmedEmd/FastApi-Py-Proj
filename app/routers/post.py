@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from app import models
 from ..database import get_db
 from sqlalchemy.orm import Session
-from app.schema import CreatePost, PostSchema
+from app.schema import CreatePost, PostOut, PostSchema
 import app.oauth2
 from typing import Optional
+from sqlalchemy import func
 
 
 router = APIRouter(
@@ -12,15 +13,32 @@ tags=['posts']
 )
 
 # get post for that logged in user
-@router.get("/posts" , response_model=list[PostSchema])
+# @router.get("/posts" , response_model=list[PostSchema])
+
+@router.get("/p")
+def Return():
+    return "Hi"
+
+@router.get("/posts")
 def get_post(db: Session = Depends(get_db), 
             user_id : int= Depends(app.oauth2.get_current_user),
             limit: int = 3,
             skip : int = 0,
             search : Optional[str] = "" ):
        Id_from_token = user_id.id
-       posts = db.query(models.PSchema).filter(models.PSchema.user_id == Id_from_token).filter(models.PSchema.title.like(f'%{search}%')).limit(limit).offset(skip).all()
-       return posts
+       posts = (db.query(models.PSchema).filter(models.PSchema.user_id == Id_from_token)
+                .filter(models.PSchema.title.like(f'%{search}%')).limit(limit)
+                .offset(skip).all())
+       
+       results = (
+      db.query(models.PSchema)
+       .outerjoin(models.Vote, models.Vote.post_id == models.PSchema.id)
+       .group_by(models.PSchema.id)
+       .all()
+)
+
+       return results
+    
 
 
 # get request (Specific)

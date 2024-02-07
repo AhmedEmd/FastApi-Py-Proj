@@ -25,6 +25,10 @@ class PostSchema(BaseModel):
     user_id: int
     owner: ReturnedData
 
+class PostOut(BaseModel):
+     Posts : PostSchema
+     votes : int
+
 class Usercreate(BaseModel):
      email : str
      password : str
